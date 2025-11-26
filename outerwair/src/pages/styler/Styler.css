@@ -1,0 +1,18 @@
+.styler-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.styler-workspace {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 2rem;
+  min-height: 400px;
+  margin: 2rem 0;
+  background-color: #f9f9f9;
+}
+
+.black {
+  color: black;
+}
