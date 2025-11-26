@@ -43,4 +43,15 @@
   justify-content: center;
 }
 
+.styler-categories,
+.styler-preview-actions,
+.styler-wardrobe-header {
+  flex: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
 
