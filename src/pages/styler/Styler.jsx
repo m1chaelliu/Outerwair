@@ -78,6 +78,22 @@ export default function Styler() {
     setItemName('');
   };
 
+  const handleClearAllItems = () => {
+    if (clothingItems.length === 0) {
+      alert('No items to clear.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete all ${clothingItems.length} clothing item${clothingItems.length === 1 ? '' : 's'}? This action cannot be undone.`
+    );
+
+    if (confirmed) {
+      setClothingItems([]);
+      localStorage.removeItem('clothingItems');
+    }
+  };
+
   const handleDragStart = (e, item) => {
     e.dataTransfer.setData('clothingItem', JSON.stringify(item));
     e.dataTransfer.effectAllowed = 'copy';
@@ -232,6 +248,14 @@ export default function Styler() {
           </button>
           <button className="styler-icon-button" type="button">
             🧠
+          </button>
+          <button
+            className="styler-icon-button"
+            type="button"
+            onClick={handleClearAllItems}
+            title="Clear all items"
+          >
+            🗑️
           </button>
         </header>
 
