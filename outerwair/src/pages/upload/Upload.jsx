@@ -15,6 +15,7 @@ export default function Upload() {
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [photoSource, setPhotoSource] = useState(null); // 
 
   // ---- Camera ----
   const startCamera = async () => {
@@ -74,6 +75,7 @@ export default function Upload() {
     setCapturedPhoto(dataUrl);
     setIsPreviewing(true);
     setPhotoMode(false);
+    setPhotoSource('camera');
   };
 
   // ---- File upload & drag/drop ----
@@ -91,7 +93,8 @@ export default function Upload() {
       const dataUrl = e.target.result;
       setCapturedPhoto(dataUrl);
       setIsPreviewing(true);
-      setPhotoMode(false); 
+      setPhotoMode(false);
+      setPhotoSource('file');
     };
     reader.readAsDataURL(file);
   };
@@ -130,17 +133,24 @@ export default function Upload() {
   };
 
   // ---- Preview actions ----
-  const handleRetake = () => {
+  const handleCameraRetake = () => {
     setCapturedPhoto(null);
     setIsPreviewing(false);
-    setPhotoMode(true); // reopen camera
+    setPhotoSource(null);
+    setPhotoMode(true);
+  };
+
+  const handleFileReselect = () => {
+    setCapturedPhoto(null);
+    setIsPreviewing(false);
+    setPhotoSource(null);
+    setPhotoMode(false);
   };
 
   const handleUsePhoto = () => {
     if (!capturedPhoto) return;
 
     localStorage.setItem('modelPhoto', capturedPhoto);
-
     navigate('/styler');
   };
 
@@ -163,9 +173,18 @@ export default function Upload() {
             }}
           />
           <div className="preview-buttons" style={{ marginTop: '1rem' }}>
-            <button className="nav-button" onClick={handleRetake}>
-              Retake
-            </button>
+            {photoSource === 'camera' && (
+              <button className="nav-button" onClick={handleCameraRetake}>
+                Retake
+              </button>
+            )}
+
+            {photoSource === 'file' && (
+              <button className="nav-button" onClick={handleFileReselect}>
+                Reselect
+              </button>
+            )}
+
             <button className="nav-button" onClick={handleUsePhoto}>
               Use Photo
             </button>
@@ -173,8 +192,10 @@ export default function Upload() {
         </div>
       )}
 
+      {/* upload / camera UI */}
       {!isPreviewing && (
         <>
+
           {!photoMode && (
             <div
               className={`upload-area ${isDragging ? 'upload-area-dragging' : ''}`}
@@ -195,7 +216,6 @@ export default function Upload() {
             onChange={handleFileInputChange}
           />
 
-          {/* Camera view when photo mode is on */}
           {photoMode && (
             <div className="camera-container">
               <video
@@ -223,7 +243,6 @@ export default function Upload() {
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      {/* Hidden canvas used to capture the frame from camera */}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
       {/* Footer buttons */}
@@ -235,8 +254,8 @@ export default function Upload() {
           {photoMode ? 'Close Photo Mode' : 'Photo Mode'}
         </button>
       )}
-{/* 
-      <button
+
+      {/* <button
         className="nav-button"
         onClick={() => navigate('/styler')}
       >

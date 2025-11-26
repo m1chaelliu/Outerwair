@@ -1,18 +1,42 @@
 .styler-container {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  display: flex;
+  height: 100vh;
+  box-sizing: border-box;
 }
 
-.styler-workspace {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 2rem;
-  min-height: 400px;
-  margin: 2rem 0;
-  background-color: #f9f9f9;
+.styler-wardrobe {
+  width: 30%;
+  min-width: 260px;
+  padding: 1rem;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.black {
-  color: black;
+.styler-model-area {
+  flex: 1;
+  padding: 1.5rem;
 }
+
+.styler-model-wrapper {
+  position: relative;
+  max-width: 480px;
+}
+
+.styler-model-photo {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+}
+
+.styler-model-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
