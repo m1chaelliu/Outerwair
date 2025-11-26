@@ -23,10 +23,10 @@ export default function Styler() {
       <div className="styler-wardrobe">
         <header className="styler-wardrobe-header">
           <button className="styler-icon-button" type="button">
-            📁
+            📁 Upload Photos
           </button>
           <button className="styler-icon-button" type="button">
-            🔗
+            🔗 Link Photos
           </button>
           <button className="styler-icon-button" type="button">
             🧠
