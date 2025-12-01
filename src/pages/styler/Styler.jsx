@@ -241,10 +241,10 @@ export default function Styler() {
             onClick={handleFileUploadClick}
             title="Upload clothing item"
           >
-            📁
+            📁 Upload Photos
           </button>
           <button className="styler-icon-button" type="button">
-            🔗
+            🔗 Link Photos
           </button>
           <button className="styler-icon-button" type="button">
             🧠
