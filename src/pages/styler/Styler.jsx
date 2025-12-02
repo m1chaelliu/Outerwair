@@ -299,7 +299,7 @@ export default function Styler() {
 
         {/* Preview area*/}
         <div className="styler-preview">
-          <h3>Preview</h3>
+          <h3 style={{color:'#363636'}}>Preview</h3>
           <div className="styler-preview-box">
             <p style={{ opacity: 0.6 }}>Select an item to preview it.</p>
           </div>
@@ -316,7 +316,17 @@ export default function Styler() {
 
 
       <div className="styler-model-area">
-        <h2>Your Model</h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+          <h2 style={{ margin: 0 }}>Your Model</h2>
+          <button
+            className="styler-icon-button"
+            type="button"
+            onClick={handleGoBackToUpload}
+            title="Go back to upload"
+          >
+            ← Back to Upload
+          </button>
+        </div>
 
         {basePhoto ? (
           <div

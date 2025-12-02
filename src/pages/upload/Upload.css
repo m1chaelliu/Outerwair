@@ -2,20 +2,56 @@
   padding: 2rem;
   max-width: 800px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color:#363636;
 }
 
 .upload-area {
-  border: 2px dashed #ccc;
+  border: 2px dashed #959595;
   border-radius: 8px;
   padding: 3rem;
   text-align: center;
   margin: 2rem 0;
   cursor: pointer;
-  transition: border-color 0.3s;
+  transition: all 0.3s ease;
+  position: relative;
+  height: 200px;
+  width: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .upload-area:hover {
-  border-color: #666;
+  border-color: #ffffff;
+}
+
+/* Drag and Drop States */
+.upload-area-dragging {
+  border-color: #4CAF50;
+  border-style: solid;
+  background: rgba(76, 175, 80, 0.05);
+}
+
+.upload-drop-indicator {
+  background: rgba(76, 175, 80, 0.9);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  pointer-events: none;
+  position: absolute;
+  z-index: 10;
+}
+
+.camera-container {
+  display: flex;
+  flex-direction: column;
 }
 
 .nav-button {

@@ -156,7 +156,7 @@ export default function Upload() {
 
   return (
     <div className="upload-container">
-      <h1>Model Upload</h1>
+      <h1>Select Model</h1>
       <p>Upload / Take a photo of your model</p>
 
       {/* ---- Preview screen ---- */}
@@ -204,7 +204,13 @@ export default function Upload() {
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             >
-              <p>Drag and drop photos here, or click to browse</p>
+              {isDragging ? (
+                <div className="upload-drop-indicator">
+                  Drop your photo here
+                </div>
+              ) : (
+                <p>Drag and drop photos here, or click to browse</p>
+              )}
             </div>
           )}
 
@@ -216,6 +222,19 @@ export default function Upload() {
             onChange={handleFileInputChange}
           />
 
+          {photoMode && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
+              <button
+                className="nav-button"
+                onClick={() => setPhotoMode(false)}
+              >
+                Back to Upload ↺
+              </button>
+              <div></div>
+              <div></div>
+            </div>
+
+          )}
           {photoMode && (
             <div className="camera-container">
               <video
@@ -234,7 +253,7 @@ export default function Upload() {
                 style={{ marginTop: '1rem' }}
                 onClick={handleTakePhoto}
               >
-                📸 Take Photo
+                Take Photo
               </button>
             </div>
           )}
@@ -246,12 +265,12 @@ export default function Upload() {
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
       {/* Footer buttons */}
-      {!isPreviewing && (
+      {!isPreviewing && !photoMode && (
         <button
           className="nav-button"
-          onClick={() => setPhotoMode((prev) => !prev)}
+          onClick={() => setPhotoMode(true)}
         >
-          {photoMode ? 'Close Photo Mode' : 'Photo Mode'}
+          Use Camera 📸
         </button>
       )}
 
