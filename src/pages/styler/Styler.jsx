@@ -19,6 +19,7 @@ export default function Styler() {
   const fileInputRef = useRef(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isFirstTime, setIsFirstTime] = useState(true);
 
   // Camera state and refs (required by camera handlers/modal)
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -51,6 +52,12 @@ export default function Styler() {
     } catch (e) {
       // ignore malformed saved positions
     }
+
+    // Load isFirstTime from localStorage
+    // const savedFirstTime = localStorage.getItem('isFirstTime');
+    // if (savedFirstTime === 'false') {
+    //   setIsFirstTime(false);
+    // }
   }, []);
 
   const handleGoBackToUpload = () => {
@@ -172,6 +179,10 @@ export default function Styler() {
         // persist combined model so it remains after reloads
         try { localStorage.setItem('modelPhoto', result.combinedImage); } catch (_) {}
 
+        // Mark that user has combined images at least once
+        setIsFirstTime(false);
+        // try { localStorage.setItem('isFirstTime', 'false'); } catch (_) {}
+
         console.log('Successfully combined images');
       } else {
         console.error('Combine failed:', result.error);
@@ -287,6 +298,10 @@ export default function Styler() {
       if (result.success) {
         setBasePhoto(result.combinedImage);
         localStorage.setItem('modelPhoto', result.combinedImage);
+
+        setIsFirstTime(false);
+        // try { localStorage.setItem('isFirstTime', 'false'); } catch (_) {}
+
         console.log('Successfully combined images:', result.message);
       }
     } catch (error) {
@@ -625,7 +640,7 @@ export default function Styler() {
             filteredItems.map(item => (
               <div
                 key={item.id}
-                className="styler-item"
+                className={`styler-item ${selectedItem?.id === item.id ? 'selected' : ''}`}
                 draggable
                 onDragStart={(e) => handleDragStart(e, item)}
                 onClick={() => handleItemClick(item)}
@@ -717,7 +732,7 @@ export default function Styler() {
             {isProcessing && (
               <div className="styler-processing-overlay">
                 <div className="styler-spinner"></div>
-                <p>Combining images...</p>
+                <p>Combining images...Please wait</p>
               </div>
             )}
 
@@ -730,8 +745,8 @@ export default function Styler() {
               </div>
             )}
 
-            {!isProcessing && !isDraggingOver && (
-              <div className="styler-model-overlay">
+            {!isProcessing && !isDraggingOver && isFirstTime && (
+              <div className="styler-model-overlay styler-model-overlay-temp">
                 <p style={{ opacity: 0.7 }}>
                   Drag clothing items here to try them on
                 </p>
