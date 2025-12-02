@@ -299,7 +299,7 @@ export default function Styler() {
 
         {/* Preview area*/}
         <div className="styler-preview">
-          <h3>Preview</h3>
+          <h3 style={{color:'#363636'}}>Preview</h3>
           <div className="styler-preview-box">
             <p style={{ opacity: 0.6 }}>Select an item to preview it.</p>
           </div>
