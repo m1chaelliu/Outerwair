@@ -13,7 +13,7 @@ export default function Home() {
         className="nav-button"
         onClick={() => navigate('/upload')}
       >
-        Go to Upload →
+        Begin →
       </button>
     </div>
   );

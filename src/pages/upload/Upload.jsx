@@ -175,7 +175,7 @@ export default function Upload() {
           <div className="preview-buttons" style={{ marginTop: '1rem' }}>
             {photoSource === 'camera' && (
               <button className="nav-button" onClick={handleCameraRetake}>
-                Retake
+                Retake ↺
               </button>
             )}
 
@@ -186,7 +186,7 @@ export default function Upload() {
             )}
 
             <button className="nav-button" onClick={handleUsePhoto}>
-              Use Photo
+              Use Photo →
             </button>
           </div>
         </div>
@@ -228,7 +228,7 @@ export default function Upload() {
                 className="nav-button"
                 onClick={() => setPhotoMode(false)}
               >
-                Back to Upload ↺
+                ← Back to Upload
               </button>
               <div></div>
               <div></div>
@@ -253,7 +253,7 @@ export default function Upload() {
                 style={{ marginTop: '1rem' }}
                 onClick={handleTakePhoto}
               >
-                Take Photo
+                Take Photo 📸
               </button>
             </div>
           )}
@@ -270,7 +270,7 @@ export default function Upload() {
           className="nav-button"
           onClick={() => setPhotoMode(true)}
         >
-          Use Camera 📸
+          Use Camera 📷
         </button>
       )}
 
