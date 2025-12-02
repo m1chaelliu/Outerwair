@@ -27,7 +27,8 @@
 }
 
 .upload-area:hover {
-  border-color: #ffffff;
+  border-color: #000000;
+  background:rgba(0, 162, 255, 0.2);
 }
 
 /* Drag and Drop States */

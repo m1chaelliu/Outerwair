@@ -1,0 +1,21 @@
+{
+  "name": "outerwair-server",
+  "version": "0.1.0",
+  "author": "Team (E)ggcelent - Connor Chow, Michael Liu, Elliott Chia, Han Yang",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "node-fetch": "^2.6.7",
+    "sharp": "^0.32.4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

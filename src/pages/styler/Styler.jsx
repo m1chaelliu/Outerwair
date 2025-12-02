@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Styler.css';
+import { combineImagesWithGemini, dataUrlToBase64, base64ToDataUrl } from './geminiApi';
 
 export default function Styler() {
   const navigate = useNavigate();
@@ -18,14 +19,20 @@ export default function Styler() {
   const fileInputRef = useRef(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isFirstTime, setIsFirstTime] = useState(true);
 
-
+  // Camera state and refs (required by camera handlers/modal)
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
   const [cameraCapturedPhoto, setCameraCapturedPhoto] = useState(null);
   const [cameraError, setCameraError] = useState('');
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+
+  // Bubbles state: persisted positions and dragging refs
+  const [bubblePositions, setBubblePositions] = useState({}); // { [itemId]: { left: '10%', top: '120%' } }
+  const draggingRef = useRef(null);
+  const [draggingId, setDraggingId] = useState(null);
 
   useEffect(() => {
     const savedPhoto = localStorage.getItem('modelPhoto');
@@ -38,6 +45,19 @@ export default function Styler() {
     if (savedItems) {
       setClothingItems(JSON.parse(savedItems));
     }
+
+    try {
+      const raw = localStorage.getItem('bubblePositions');
+      if (raw) setBubblePositions(JSON.parse(raw));
+    } catch (e) {
+      // ignore malformed saved positions
+    }
+
+    // Load isFirstTime from localStorage
+    // const savedFirstTime = localStorage.getItem('isFirstTime');
+    // if (savedFirstTime === 'false') {
+    //   setIsFirstTime(false);
+    // }
   }, []);
 
   const handleGoBackToUpload = () => {
@@ -120,22 +140,24 @@ export default function Styler() {
     setIsDraggingOver(false);
   };
 
-  // Stubbed API function for combining images
+  // Use Gemini API to combine images
   const combineImages = async (modelImage, clothingImage) => {
-    // Replace with actual API call
-    console.log('API Call: Combining images...');
-    console.log('Model Image:', modelImage.substring(0, 50) + '...');
-    console.log('Clothing Image:', clothingImage.substring(0, 50) + '...');
+    try {
+      // Convert data URLs to base64 (remove data:image/png;base64, prefix)
+      const modelBase64 = dataUrlToBase64(modelImage);
+      const clothingBase64 = dataUrlToBase64(clothingImage);
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+      // Generate the combined image using Gemini
+      const resultBase64 = await combineImagesWithGemini(modelBase64, clothingBase64);
 
-    // For now, return a mock result
-    return {
-      success: true,
-      combinedImage: modelImage,
-      message: 'Images combined successfully (stub)',
-    };
+      // Convert back to data URL for display
+      const combinedImage = base64ToDataUrl(resultBase64);
+
+      return { success: true, combinedImage };
+    } catch (e) {
+      console.error('combineImages error', e);
+      return { success: false, error: e.message || String(e) };
+    }
   };
 
   const handleDrop = async (e) => {
@@ -154,8 +176,17 @@ export default function Styler() {
 
       if (result.success) {
         setBasePhoto(result.combinedImage);
+        // persist combined model so it remains after reloads
+        try { localStorage.setItem('modelPhoto', result.combinedImage); } catch (_) {}
 
-        console.log('Successfully combined images:', result.message);
+        // Mark that user has combined images at least once
+        setIsFirstTime(false);
+        // try { localStorage.setItem('isFirstTime', 'false'); } catch (_) {}
+
+        console.log('Successfully combined images');
+      } else {
+        console.error('Combine failed:', result.error);
+        alert('Failed to combine images: ' + (result.error || 'unknown'));
       }
     } catch (error) {
       console.error('Error combining images:', error);
@@ -267,6 +298,10 @@ export default function Styler() {
       if (result.success) {
         setBasePhoto(result.combinedImage);
         localStorage.setItem('modelPhoto', result.combinedImage);
+
+        setIsFirstTime(false);
+        // try { localStorage.setItem('isFirstTime', 'false'); } catch (_) {}
+
         console.log('Successfully combined images:', result.message);
       }
     } catch (error) {
@@ -300,6 +335,76 @@ export default function Styler() {
     setShowDeleteModal(false);
   };
 
+  // pointer drag handlers
+  const handlePointerDownBubble = (e, itemId) => {
+    e.preventDefault();
+    draggingRef.current = { id: itemId };
+    setDraggingId(itemId);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+  };
+
+  const onPointerMove = (e) => {
+    const drag = draggingRef.current;
+    if (!drag || !modelAreaRef.current) return;
+    const rect = modelAreaRef.current.getBoundingClientRect();
+    const leftPct = ((e.clientX - rect.left) / rect.width) * 100;
+    const topPct = ((e.clientY - rect.top) / rect.height) * 100;
+
+    const updated = { ...bubblePositions };
+    updated[drag.id] = { left: `${leftPct}%`, top: `${topPct}%` };
+    setBubblePositions(updated);
+  };
+
+  const onPointerUp = (e) => {
+    const drag = draggingRef.current;
+    if (!drag) return;
+
+    const rect = modelAreaRef.current?.getBoundingClientRect();
+    const updated = { ...bubblePositions };
+
+    if (rect) {
+      const leftPct = ((e.clientX - rect.left) / rect.width) * 100;
+      const topPct = ((e.clientY - rect.top) / rect.height) * 100;
+      updated[drag.id] = { left: `${leftPct}%`, top: `${topPct}%` };
+    }
+
+    saveBubblePositions(updated);
+
+    draggingRef.current = null;
+    setDraggingId(null);
+    window.removeEventListener('pointermove', onPointerMove);
+    window.removeEventListener('pointerup', onPointerUp);
+  };
+
+  // persist positions
+  const saveBubblePositions = (newPositions) => {
+    setBubblePositions(newPositions);
+    try { localStorage.setItem('bubblePositions', JSON.stringify(newPositions)); } catch (_) {}
+  };
+
+  // Default bubble positions by category (percent relative to model wrapper)
+  const getBubblePosition = (category, index, total) => {
+    let baseLeft = 50;
+    let baseTop = 50;
+    switch (category) {
+      case 'Tops': baseTop = -12; baseLeft = 50; break;
+      case 'Outerwear': baseTop = 8; baseLeft = 112; break;
+      case 'Accessories': baseTop = 8; baseLeft = -12; break;
+      case 'Bottoms': baseTop = 112; baseLeft = 50; break;
+      case 'Shoes': baseTop = 125; baseLeft = 78; break;
+      default: baseTop = 50; baseLeft = 50;
+    }
+    const spreadPx = 18;
+    const offset = (index - (total - 1) / 2) * spreadPx;
+    return { left: `calc(${baseLeft}% + ${offset}px)`, top: `${baseTop}%` };
+  };
+
+  // Group clothing items by category for bubble layout
+  const grouped = clothingItems.reduce((acc, it) => {
+    (acc[it.category] = acc[it.category] || []).push(it);
+    return acc;
+  }, {});
 
   return (
     <div className="styler-container">
@@ -535,7 +640,7 @@ export default function Styler() {
             filteredItems.map(item => (
               <div
                 key={item.id}
-                className="styler-item"
+                className={`styler-item ${selectedItem?.id === item.id ? 'selected' : ''}`}
                 draggable
                 onDragStart={(e) => handleDragStart(e, item)}
                 onClick={() => handleItemClick(item)}
@@ -627,7 +732,7 @@ export default function Styler() {
             {isProcessing && (
               <div className="styler-processing-overlay">
                 <div className="styler-spinner"></div>
-                <p>Combining images...</p>
+                <p>Combining images...Please wait</p>
               </div>
             )}
 
@@ -640,11 +745,40 @@ export default function Styler() {
               </div>
             )}
 
-            {!isProcessing && !isDraggingOver && (
-              <div className="styler-model-overlay">
+            {!isProcessing && !isDraggingOver && isFirstTime && (
+              <div className="styler-model-overlay styler-model-overlay-temp">
                 <p style={{ opacity: 0.7 }}>
                   Drag clothing items here to try them on
                 </p>
+              </div>
+            )}
+
+            {/* Bubbles overlay: show uploaded clothing icons around the model */}
+            {clothingItems && clothingItems.length > 0 && (
+              <div className="bubbles-overlay" aria-hidden={false}>
+                {['Tops','Outerwear','Accessories','Bottoms','Shoes'].map((cat) => {
+                  const list = grouped[cat] || [];
+                  return list.map((item, idx) => {
+                    const saved = bubblePositions[item.id];
+                    const pos = saved || getBubblePosition(cat, idx, list.length);
+                    return (
+                      <div
+                        key={item.id}
+                        className={`bubble bubble-${cat.toLowerCase()} ${draggingId === item.id ? 'dragging' : ''}`}
+                        style={{ left: pos.left, top: pos.top }}
+                        title={`${item.name} (${item.category})`}
+                        onPointerDown={(e) => handlePointerDownBubble(e, item.id)}
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="bubble-img styler-bubble-image"
+                          onClick={() => setSelectedItem(item)}
+                        />
+                      </div>
+                    );
+                  });
+                })}
               </div>
             )}
           </div>

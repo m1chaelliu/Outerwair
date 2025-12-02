@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <div className="home-container">
       <h1>Welcome to Outerwair</h1>
-      <p>Team (E)ggcelent - Connor Chow, Michael Liu, Elliott Chia</p>
+      <p>Team (E)ggcelent - Connor Chow, Michael Liu, Elliott Chia, Han Yang</p>
 
       <button
         className="nav-button"
