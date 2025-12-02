@@ -702,17 +702,7 @@ export default function Styler() {
 
 
       <div className="styler-model-area">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-          <h2 style={{ margin: 0 }}>Your Model</h2>
-          <button
-            className="styler-icon-button"
-            type="button"
-            onClick={handleGoBackToUpload}
-            title="Go back to upload"
-          >
-            ← Back to Upload
-          </button>
-        </div>
+        <h2 style={{ margin: '0 0 1rem 0', textAlign: 'center' }}>Your Model</h2>
 
         {basePhoto ? (
           <div
@@ -782,7 +772,21 @@ export default function Styler() {
               </div>
             )}
           </div>
-        ) : (
+        ) : null}
+
+        {basePhoto && (
+          <button
+            className="styler-icon-button"
+            type="button"
+            onClick={handleGoBackToUpload}
+            title="Go back to upload"
+            style={{ marginTop: '1rem' }}
+          >
+            ← Back to Upload
+          </button>
+        )}
+
+        {!basePhoto && (
           <div className="styler-no-photo">
             <p>No model photo found.</p>
             <p style={{ opacity: 0.7, marginTop: '0.25rem' }}>
