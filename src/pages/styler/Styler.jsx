@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Styler.css';
+import { combineImagesWithGemini, dataUrlToBase64, base64ToDataUrl } from './geminiApi';
 
 export default function Styler() {
   const navigate = useNavigate();
@@ -132,25 +133,20 @@ export default function Styler() {
     setIsDraggingOver(false);
   };
 
-  // Call the API to combine images
+  // Use Gemini API to combine images
   const combineImages = async (modelImage, clothingImage) => {
     try {
-      const resp = await fetch('/api/combine', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ modelImage, clothingImage }),
-      });
+      // Convert data URLs to base64 (remove data:image/png;base64, prefix)
+      const modelBase64 = dataUrlToBase64(modelImage);
+      const clothingBase64 = dataUrlToBase64(clothingImage);
 
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        throw new Error(err.error || 'Combine API failed');
-      }
+      // Generate the combined image using Gemini
+      const resultBase64 = await combineImagesWithGemini(modelBase64, clothingBase64);
 
-      const json = await resp.json();
+      // Convert back to data URL for display
+      const combinedImage = base64ToDataUrl(resultBase64);
 
-      if (!json.success) throw new Error(json.error || 'Combine failed');
-
-      return { success: true, combinedImage: json.combinedImage };
+      return { success: true, combinedImage };
     } catch (e) {
       console.error('combineImages error', e);
       return { success: false, error: e.message || String(e) };
