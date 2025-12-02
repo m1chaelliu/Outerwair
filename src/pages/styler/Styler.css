@@ -222,8 +222,12 @@
   padding: 1.5rem;
   max-width: 650px;
   width: 80vw;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideUp {
@@ -250,8 +254,17 @@
 .styler-modal-image {
   width: 100%;
   height: auto;
+  max-height: 50vh;
   border-radius: 12px;
   object-fit: contain;
+  border: 2px solid #e0e0e0;
+}
+
+.styler-modal-video {
+  width: 100%;
+  height: auto;
+  max-height: 50vh;
+  border-radius: 12px;
   border: 2px solid #e0e0e0;
 }
 
@@ -291,6 +304,8 @@
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 .styler-modal-button {
