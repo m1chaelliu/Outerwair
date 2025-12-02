@@ -165,14 +165,8 @@ export default function Upload() {
           <img
             src={capturedPhoto}
             alt="Captured preview"
-            style={{
-              width: '100%',
-              maxWidth: '500px',
-              borderRadius: '8px',
-              marginTop: '1rem',
-            }}
           />
-          <div className="preview-buttons" style={{ marginTop: '1rem' }}>
+          <div className="preview-buttons">
             {photoSource === 'camera' && (
               <button className="nav-button" onClick={handleCameraRetake}>
                 Retake ↺
