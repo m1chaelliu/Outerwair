@@ -19,13 +19,18 @@ export default function Styler() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-
+  // Camera state and refs (required by camera handlers/modal)
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
   const [cameraCapturedPhoto, setCameraCapturedPhoto] = useState(null);
   const [cameraError, setCameraError] = useState('');
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+
+  // Bubbles state: persisted positions and dragging refs
+  const [bubblePositions, setBubblePositions] = useState({}); // { [itemId]: { left: '10%', top: '120%' } }
+  const draggingRef = useRef(null);
+  const [draggingId, setDraggingId] = useState(null);
 
   useEffect(() => {
     const savedPhoto = localStorage.getItem('modelPhoto');
@@ -37,6 +42,13 @@ export default function Styler() {
     const savedItems = localStorage.getItem('clothingItems');
     if (savedItems) {
       setClothingItems(JSON.parse(savedItems));
+    }
+
+    try {
+      const raw = localStorage.getItem('bubblePositions');
+      if (raw) setBubblePositions(JSON.parse(raw));
+    } catch (e) {
+      // ignore malformed saved positions
     }
   }, []);
 
@@ -353,6 +365,35 @@ export default function Styler() {
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
   };
+
+  // persist positions
+  const saveBubblePositions = (newPositions) => {
+    setBubblePositions(newPositions);
+    try { localStorage.setItem('bubblePositions', JSON.stringify(newPositions)); } catch (_) {}
+  };
+
+  // Default bubble positions by category (percent relative to model wrapper)
+  const getBubblePosition = (category, index, total) => {
+    let baseLeft = 50;
+    let baseTop = 50;
+    switch (category) {
+      case 'Tops': baseTop = -12; baseLeft = 50; break;
+      case 'Outerwear': baseTop = 8; baseLeft = 112; break;
+      case 'Accessories': baseTop = 8; baseLeft = -12; break;
+      case 'Bottoms': baseTop = 112; baseLeft = 50; break;
+      case 'Shoes': baseTop = 125; baseLeft = 78; break;
+      default: baseTop = 50; baseLeft = 50;
+    }
+    const spreadPx = 18;
+    const offset = (index - (total - 1) / 2) * spreadPx;
+    return { left: `calc(${baseLeft}% + ${offset}px)`, top: `${baseTop}%` };
+  };
+
+  // Group clothing items by category for bubble layout
+  const grouped = clothingItems.reduce((acc, it) => {
+    (acc[it.category] = acc[it.category] || []).push(it);
+    return acc;
+  }, {});
 
   return (
     <div className="styler-container">
@@ -698,6 +739,35 @@ export default function Styler() {
                 <p style={{ opacity: 0.7 }}>
                   Drag clothing items here to try them on
                 </p>
+              </div>
+            )}
+
+            {/* Bubbles overlay: show uploaded clothing icons around the model */}
+            {clothingItems && clothingItems.length > 0 && (
+              <div className="bubbles-overlay" aria-hidden={false}>
+                {['Tops','Outerwear','Accessories','Bottoms','Shoes'].map((cat) => {
+                  const list = grouped[cat] || [];
+                  return list.map((item, idx) => {
+                    const saved = bubblePositions[item.id];
+                    const pos = saved || getBubblePosition(cat, idx, list.length);
+                    return (
+                      <div
+                        key={item.id}
+                        className={`bubble bubble-${cat.toLowerCase()} ${draggingId === item.id ? 'dragging' : ''}`}
+                        style={{ left: pos.left, top: pos.top }}
+                        title={`${item.name} (${item.category})`}
+                        onPointerDown={(e) => handlePointerDownBubble(e, item.id)}
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="bubble-img styler-bubble-image"
+                          onClick={() => setSelectedItem(item)}
+                        />
+                      </div>
+                    );
+                  });
+                })}
               </div>
             )}
           </div>
