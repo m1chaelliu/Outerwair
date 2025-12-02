@@ -61,6 +61,67 @@ export async function combineImagesWithGemini(modelBase64, clothingBase64) {
 }
 
 /**
+ * Analyze a clothing image and generate a descriptive title and category
+ * @param {string} clothingBase64 - Base64 encoded clothing image
+ * @returns {Promise<{title: string, category: string}>} - Generated title and category
+ */
+export async function analyzeClothingImage(clothingBase64) {
+  // Check for API key
+  if (!GEMINI_API_KEY) {
+    throw new Error(
+      "GEMINI_API_KEY is missing! Please add/create a .env file with this in the ROOT directory."
+    );
+  }
+
+  try {
+    const prompt = [
+      {
+        text: `Analyze this clothing item image and provide both a descriptive title and category.
+
+        Categories (choose ONE):
+        - Tops (shirts, t-shirts, blouses, sweaters, hoodies, tanks)
+        - Bottoms (pants, jeans, skirts, shorts, leggings)
+        - Outerwear (jackets, coats, blazers, cardigans)
+        - Shoes (sneakers, boots, sandals, heels, flats)
+        - Accessories (hats, scarves, bags, belts, jewelry, sunglasses)
+
+        Generate a short title (3-5 words) describing the type, color, and distinctive features.
+
+        Respond ONLY in this exact JSON format:
+        {"title": "Blue Denim Jacket", "category": "Outerwear"}`
+      },
+      {
+        inlineData: {
+          mimeType: "image/png",
+          data: clothingBase64,
+        },
+      },
+    ];
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
+
+    // Extract the text from response
+    const text = response.candidates[0].content.parts[0].text.trim();
+
+    // Parse JSON response
+    // Remove markdown code blocks if present
+    const jsonText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const parsed = JSON.parse(jsonText);
+
+    return {
+      title: parsed.title || "Clothing Item",
+      category: parsed.category || "Tops"
+    };
+  } catch (error) {
+    console.error("Error analyzing clothing image with Gemini:", error);
+    throw error;
+  }
+}
+
+/**
  * Helper function to convert data URL to base64 (removes the data:image/png;base64, prefix)
  * @param {string} dataUrl - Full data URL from canvas or file reader
  * @returns {string} - Pure base64 string

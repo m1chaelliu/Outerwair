@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Styler.css';
-import { combineImagesWithGemini, dataUrlToBase64, base64ToDataUrl } from './geminiApi';
+import { combineImagesWithGemini, dataUrlToBase64, base64ToDataUrl, analyzeClothingImage } from './geminiApi';
 
 export default function Styler() {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ export default function Styler() {
   const [pendingUpload, setPendingUpload] = useState(null);
   const [itemName, setItemName] = useState('');
   const [itemCategory, setItemCategory] = useState('Tops');
+  const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
   const modelAreaRef = useRef(null);
   const fileInputRef = useRef(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -68,16 +69,31 @@ export default function Styler() {
     fileInputRef.current?.click();
   };
 
-  const handleFileSelect = (e) => {
+  const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
-      setPendingUpload(event.target.result);
+    reader.onload = async (event) => {
+      const imageDataUrl = event.target.result;
+      setPendingUpload(imageDataUrl);
       setShowUploadModal(true);
       setItemName('');
       setItemCategory('Tops');
+      setIsGeneratingTitle(true);
+
+      // Automatically generate title and category from image
+      try {
+        const base64Image = dataUrlToBase64(imageDataUrl);
+        const { title, category } = await analyzeClothingImage(base64Image);
+        setItemName(title);
+        setItemCategory(category);
+      } catch (error) {
+        console.error('Failed to generate title and category:', error);
+        // If generation fails, just leave defaults for manual entry
+      } finally {
+        setIsGeneratingTitle(false);
+      }
     };
     reader.readAsDataURL(file);
     e.target.value = '';
@@ -275,13 +291,27 @@ export default function Styler() {
     startCamera();
   };
 
-  const handleCameraUsePhoto = () => {
+  const handleCameraUsePhoto = async () => {
     if (!cameraCapturedPhoto) return;
     setPendingUpload(cameraCapturedPhoto);
     setItemName('');
     setItemCategory('Tops');
     setIsCameraOpen(false);
     setShowUploadModal(true);
+    setIsGeneratingTitle(true);
+
+    // Automatically generate title and category from image
+    try {
+      const base64Image = dataUrlToBase64(cameraCapturedPhoto);
+      const { title, category } = await analyzeClothingImage(base64Image);
+      setItemName(title);
+      setItemCategory(category);
+    } catch (error) {
+      console.error('Failed to generate title and category:', error);
+      // If generation fails, just leave defaults for manual entry
+    } finally {
+      setIsGeneratingTitle(false);
+    }
   };
 
   const handleItemClick = (item) => {
@@ -506,8 +536,9 @@ export default function Styler() {
                   type="text"
                   value={itemName}
                   onChange={(e) => setItemName(e.target.value)}
-                  placeholder="e.g., Blue Denim Jacket"
+                  placeholder={isGeneratingTitle ? "Generating title..." : "e.g., Blue Denim Jacket"}
                   autoFocus
+                  disabled={isGeneratingTitle}
                 />
               </label>
 
@@ -538,10 +569,10 @@ export default function Styler() {
               <button
                 className="styler-modal-button primary"
                 onClick={handleSaveClothingItem}
-                disabled={!itemName.trim()}
+                disabled={!itemName.trim() || isGeneratingTitle}
                 type="button"
               >
-                Save Item
+                {isGeneratingTitle ? 'Generating...' : 'Save Item'}
               </button>
             </div>
           </div>
@@ -736,10 +767,11 @@ export default function Styler() {
             )}
 
             {!isProcessing && !isDraggingOver && isFirstTime && (
-              <div className="styler-model-overlay styler-model-overlay-temp">
-                <p style={{ opacity: 0.7 }}>
-                  Drag clothing items here to try them on
-                </p>
+              <div
+                className="styler-model-overlay styler-model-overlay-temp"
+                title="Drag clothing items here to try them on"
+                style={{ pointerEvents: 'auto' }}
+              >
               </div>
             )}
 
