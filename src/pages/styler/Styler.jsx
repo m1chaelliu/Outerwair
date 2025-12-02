@@ -247,7 +247,7 @@ export default function Styler() {
             🔗 Link Photos
           </button>
           <button className="styler-icon-button" type="button">
-            🧠
+            📸 Snap a Picture
           </button>
           <button
             className="styler-icon-button"
