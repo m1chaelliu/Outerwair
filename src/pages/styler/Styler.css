@@ -185,9 +185,9 @@
 .styler-modal {
   background: white;
   border-radius: 16px;
-  padding: 2rem;
-  max-width: 500px;
-  width: 90%;
+  padding: 1.5rem;
+  max-width: 650px;
+  width: 80vw;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s ease;
 }
@@ -214,12 +214,13 @@
 }
 
 .styler-modal-image {
-  max-width: 200px;
-  max-height: 200px;
-  border-radius: 8px;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
   object-fit: contain;
   border: 2px solid #e0e0e0;
 }
+
 
 .styler-modal-form {
   display: flex;

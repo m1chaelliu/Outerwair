@@ -16,6 +16,12 @@ export default function Styler() {
   const [itemCategory, setItemCategory] = useState('Tops');
   const modelAreaRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
+  const [cameraCapturedPhoto, setCameraCapturedPhoto] = useState(null);
+  const [cameraError, setCameraError] = useState('');
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
     const savedPhoto = localStorage.getItem('modelPhoto');
@@ -160,6 +166,97 @@ export default function Styler() {
     ? clothingItems
     : clothingItems.filter(item => item.category === selectedCategory);
 
+  const startCamera = async () => {
+    try {
+      setCameraError('');
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+      });
+      setCameraStream(mediaStream);
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        await videoRef.current.play();
+      }
+    } catch (err) {
+      console.error(err);
+      setCameraError('Unable to access camera. Check permissions or HTTPS.');
+      setIsCameraOpen(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop());
+      setCameraStream(null);
+    }
+  };
+
+  useEffect(() => {
+    if (isCameraOpen) {
+      startCamera();
+    } else {
+      stopCamera();
+      setCameraCapturedPhoto(null);
+      setCameraError('');
+    }
+
+    return () => {
+      stopCamera();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCameraOpen]);
+
+  const handleOpenCamera = () => {
+    setIsCameraOpen(true);
+  };
+
+  const handleCloseCamera = () => {
+    setIsCameraOpen(false);
+  };
+
+  const handleCaptureFromCamera = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    const width = video.videoWidth || 640;
+    const height = video.videoHeight || 480;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    ctx.drawImage(video, 0, 0, width, height);
+
+    const dataUrl = canvas.toDataURL('image/png');
+    setCameraCapturedPhoto(dataUrl);
+
+    // We can stop the stream after capture to freeze the frame
+    stopCamera();
+  };
+
+  const handleCameraRetake = () => {
+    setCameraCapturedPhoto(null);
+    startCamera();
+  };
+
+  const handleCameraUsePhoto = () => {
+    if (!cameraCapturedPhoto) return;
+
+    // Use camera capture as a clothing image:
+    // pass it into the existing Add Clothing Item flow
+    setPendingUpload(cameraCapturedPhoto);
+    setItemName('');
+    setItemCategory('Tops');
+
+    // Close camera modal and open upload modal
+    setIsCameraOpen(false);
+    setShowUploadModal(true);
+  };
+
+
   return (
     <div className="styler-container">
       {/* Hidden file input */}
@@ -170,6 +267,75 @@ export default function Styler() {
         onChange={handleFileSelect}
         style={{ display: 'none' }}
       />
+      {/* Camera Modal for Snap a Picture */}
+      {isCameraOpen && (
+        <div className="styler-modal-overlay">
+          <div className="styler-modal">
+            <h3>Snap a Picture</h3>
+
+            {cameraError && (
+              <p style={{ color: 'red', marginBottom: '0.5rem' }}>{cameraError}</p>
+            )}
+
+            {!cameraCapturedPhoto ? (
+              <div className="styler-modal-preview">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="styler-modal-video"
+                />
+              </div>
+            ) : (
+              <div className="styler-modal-preview">
+                <img
+                  src={cameraCapturedPhoto}
+                  alt="Captured preview"
+                  className="styler-modal-image"
+                />
+              </div>
+            )}
+
+            <div className="styler-modal-actions">
+              {!cameraCapturedPhoto ? (
+                <>
+                  <button
+                    className="styler-modal-button secondary"
+                    type="button"
+                    onClick={handleCloseCamera}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="styler-modal-button primary"
+                    type="button"
+                    onClick={handleCaptureFromCamera}
+                  >
+                    Capture
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="styler-modal-button secondary"
+                    type="button"
+                    onClick={handleCameraRetake}
+                  >
+                    Retake
+                  </button>
+                  <button
+                    className="styler-modal-button primary"
+                    type="button"
+                    onClick={handleCameraUsePhoto}
+                  >
+                    Use Photo
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Upload Modal */}
       {showUploadModal && (
@@ -233,6 +399,8 @@ export default function Styler() {
         </div>
       )}
 
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
+
       <div className="styler-wardrobe">
         <header className="styler-wardrobe-header">
           <button
@@ -246,7 +414,12 @@ export default function Styler() {
           <button className="styler-icon-button" type="button">
             🔗 Link Photos
           </button>
-          <button className="styler-icon-button" type="button">
+          <button
+            className="styler-icon-button"
+            type="button"
+            onClick={handleOpenCamera}
+            title="Snap a clothing photo"
+          >
             📸 Snap a Picture
           </button>
           <button
@@ -299,7 +472,7 @@ export default function Styler() {
 
         {/* Preview area*/}
         <div className="styler-preview">
-          <h3 style={{color:'#363636'}}>Preview</h3>
+          <h3 style={{ color: '#363636' }}>Preview</h3>
           <div className="styler-preview-box">
             <p style={{ opacity: 0.6 }}>Select an item to preview it.</p>
           </div>
