@@ -779,10 +779,10 @@ export default function Styler() {
             className="styler-icon-button"
             type="button"
             onClick={handleGoBackToUpload}
-            title="Go back to upload"
+            title="Go back to upload model"
             style={{ marginTop: '1rem' }}
           >
-            ← Back to Upload
+            ← Change Model
           </button>
         )}
 
@@ -798,7 +798,7 @@ export default function Styler() {
               onClick={handleGoBackToUpload}
               style={{ marginTop: '0.75rem' }}
             >
-              Back to Upload
+              ← Back to Upload
             </button>
           </div>
         )}
