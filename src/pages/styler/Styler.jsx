@@ -120,22 +120,29 @@ export default function Styler() {
     setIsDraggingOver(false);
   };
 
-  // Stubbed API function for combining images
+  // Call the API to combine images
   const combineImages = async (modelImage, clothingImage) => {
-    // Replace with actual API call
-    console.log('API Call: Combining images...');
-    console.log('Model Image:', modelImage.substring(0, 50) + '...');
-    console.log('Clothing Image:', clothingImage.substring(0, 50) + '...');
+    try {
+      const resp = await fetch('/api/combine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ modelImage, clothingImage }),
+      });
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'Combine API failed');
+      }
 
-    // For now, return a mock result
-    return {
-      success: true,
-      combinedImage: modelImage,
-      message: 'Images combined successfully (stub)',
-    };
+      const json = await resp.json();
+
+      if (!json.success) throw new Error(json.error || 'Combine failed');
+
+      return { success: true, combinedImage: json.combinedImage };
+    } catch (e) {
+      console.error('combineImages error', e);
+      return { success: false, error: e.message || String(e) };
+    }
   };
 
   const handleDrop = async (e) => {
@@ -154,8 +161,13 @@ export default function Styler() {
 
       if (result.success) {
         setBasePhoto(result.combinedImage);
+        // persist combined model so it remains after reloads
+        try { localStorage.setItem('modelPhoto', result.combinedImage); } catch (_) {}
 
-        console.log('Successfully combined images:', result.message);
+        console.log('Successfully combined images');
+      } else {
+        console.error('Combine failed:', result.error);
+        alert('Failed to combine images: ' + (result.error || 'unknown'));
       }
     } catch (error) {
       console.error('Error combining images:', error);
@@ -300,6 +312,47 @@ export default function Styler() {
     setShowDeleteModal(false);
   };
 
+  // pointer drag handlers
+  const handlePointerDownBubble = (e, itemId) => {
+    e.preventDefault();
+    draggingRef.current = { id: itemId };
+    setDraggingId(itemId);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+  };
+
+  const onPointerMove = (e) => {
+    const drag = draggingRef.current;
+    if (!drag || !modelAreaRef.current) return;
+    const rect = modelAreaRef.current.getBoundingClientRect();
+    const leftPct = ((e.clientX - rect.left) / rect.width) * 100;
+    const topPct = ((e.clientY - rect.top) / rect.height) * 100;
+
+    const updated = { ...bubblePositions };
+    updated[drag.id] = { left: `${leftPct}%`, top: `${topPct}%` };
+    setBubblePositions(updated);
+  };
+
+  const onPointerUp = (e) => {
+    const drag = draggingRef.current;
+    if (!drag) return;
+
+    const rect = modelAreaRef.current?.getBoundingClientRect();
+    const updated = { ...bubblePositions };
+
+    if (rect) {
+      const leftPct = ((e.clientX - rect.left) / rect.width) * 100;
+      const topPct = ((e.clientY - rect.top) / rect.height) * 100;
+      updated[drag.id] = { left: `${leftPct}%`, top: `${topPct}%` };
+    }
+
+    saveBubblePositions(updated);
+
+    draggingRef.current = null;
+    setDraggingId(null);
+    window.removeEventListener('pointermove', onPointerMove);
+    window.removeEventListener('pointerup', onPointerUp);
+  };
 
   return (
     <div className="styler-container">

@@ -485,3 +485,54 @@
 .nav-button:hover {
   background-color: #007dc6;
 }
+
+/* Bubbles overlay */
+.bubbles-overlay {
+  position: absolute;
+  /* make overlay slightly larger than image so bubbles can be placed outside, but not too large */
+  left: -25%;
+  top: -25%;
+  width: 150%;
+  height: 150%;
+  pointer-events: none; /* allow clicks to pass through except for bubble content */
+}
+
+.bubble {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.98);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  border: 2px solid #fff;
+  pointer-events: auto; /* enable clicking */
+  cursor: grab;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.bubble:active { cursor: grabbing; transform: translate(-50%, -50%) scale(1.02); box-shadow: 0 14px 36px rgba(0,0,0,0.22); }
+
+.bubble.dragging { opacity: 0.9; transform: translate(-50%, -50%) scale(1.04); }
+
+.bubble:hover { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 12px 30px rgba(0,0,0,0.18);} 
+
+.bubble-img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Ensure bubbles don't cover model: give bubbles higher z-index but they are outside image area */
+.bubble { z-index: 40; }
+
+/* Category-specific color accents (optional) */
+.bubble-tops { box-shadow: 0 8px 20px rgba(0,162,255,0.18);} 
+.bubble-bottoms { box-shadow: 0 8px 20px rgba(76,175,80,0.18);} 
+.bubble-outerwear { box-shadow: 0 8px 20px rgba(155,89,182,0.18);} 
+.bubble-accessories { box-shadow: 0 8px 20px rgba(241,196,15,0.18);} 
+.bubble-shoes { box-shadow: 0 8px 20px rgba(231,76,60,0.18);}
