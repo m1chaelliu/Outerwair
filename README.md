@@ -1,16 +1,23 @@
 # CS 160
 
 Team [E]ggcelent
-Connor Chow, Michael Liu, Elliott Chia
+Connor Chow, Michael Liu, Elliott Chia, Han Yang
 
-inside folder, run:
+---
+## TO RUN:
+__inside the root folder__:
+
+1. run:
 ```
 npm install
 ```
-and then
+2. Create a `.env` file with a `VITE_GEMINI_API_KEY=<key>`
+
+3. then run:
 ```
 npm run dev
 ```
+---
 
 ## React + Vite
 
