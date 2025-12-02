@@ -736,10 +736,11 @@ export default function Styler() {
             )}
 
             {!isProcessing && !isDraggingOver && isFirstTime && (
-              <div className="styler-model-overlay styler-model-overlay-temp">
-                <p style={{ opacity: 0.7 }}>
-                  Drag clothing items here to try them on
-                </p>
+              <div
+                className="styler-model-overlay styler-model-overlay-temp"
+                title="Drag clothing items here to try them on"
+                style={{ pointerEvents: 'auto' }}
+              >
               </div>
             )}
 
