@@ -16,6 +16,10 @@ export default function Styler() {
   const [itemCategory, setItemCategory] = useState('Tops');
   const modelAreaRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
   const [cameraCapturedPhoto, setCameraCapturedPhoto] = useState(null);
@@ -129,7 +133,7 @@ export default function Styler() {
     // For now, return a mock result
     return {
       success: true,
-      combinedImage: modelImage, // Stub: just return the model image
+      combinedImage: modelImage,
       message: 'Images combined successfully (stub)',
     };
   };
@@ -149,7 +153,6 @@ export default function Styler() {
       const result = await combineImages(basePhoto, item.image);
 
       if (result.success) {
-        // Update the base photo with the combined result
         setBasePhoto(result.combinedImage);
 
         console.log('Successfully combined images:', result.message);
@@ -233,7 +236,6 @@ export default function Styler() {
     const dataUrl = canvas.toDataURL('image/png');
     setCameraCapturedPhoto(dataUrl);
 
-    // We can stop the stream after capture to freeze the frame
     stopCamera();
   };
 
@@ -244,16 +246,58 @@ export default function Styler() {
 
   const handleCameraUsePhoto = () => {
     if (!cameraCapturedPhoto) return;
-
-    // Use camera capture as a clothing image:
-    // pass it into the existing Add Clothing Item flow
     setPendingUpload(cameraCapturedPhoto);
     setItemName('');
     setItemCategory('Tops');
-
-    // Close camera modal and open upload modal
     setIsCameraOpen(false);
     setShowUploadModal(true);
+  };
+
+  const handleItemClick = (item) => {
+    setSelectedItem(item);
+  };
+
+  const handleEquipSelectedItem = async () => {
+    if (!selectedItem || !basePhoto || isProcessing) return;
+
+    setIsProcessing(true);
+    try {
+      const result = await combineImages(basePhoto, selectedItem.image);
+
+      if (result.success) {
+        setBasePhoto(result.combinedImage);
+        localStorage.setItem('modelPhoto', result.combinedImage);
+        console.log('Successfully combined images:', result.message);
+      }
+    } catch (error) {
+      console.error('Error combining images:', error);
+      alert('Failed to combine images. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRemoveSelectedItem = () => {
+    if (!selectedItem) return;
+    setShowDeleteModal(true);
+  };
+
+  const handleCancelRemoveItem = () => {
+    setShowDeleteModal(false);
+  };
+
+  const handleConfirmRemoveItem = () => {
+    if (!selectedItem) return;
+
+    const updatedItems = clothingItems.filter(
+      (item) => item.id !== selectedItem.id
+    );
+
+    setClothingItems(updatedItems);
+    localStorage.setItem('clothingItems', JSON.stringify(updatedItems));
+
+    setSelectedItem(null);
+    setShowDeleteModal(false);
   };
 
 
@@ -398,6 +442,45 @@ export default function Styler() {
           </div>
         </div>
       )}
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && selectedItem && (
+        <div className="styler-modal-overlay">
+          <div className="styler-modal">
+            <h3 style={{color:'black'}}>
+              Remove Clothing Item</h3>
+
+            <div className="styler-modal-preview">
+              <img
+                src={selectedItem.image}
+                alt={selectedItem.name}
+                className="styler-modal-image"
+              />
+            </div>
+
+            <p style={{color:'black', textAlign: 'center', marginTop: '0.5rem' }}>
+              Are you sure you want to remove <strong>{selectedItem.name}</strong> from your wardrobe?
+              This action cannot be undone.
+            </p>
+
+            <div className="styler-modal-actions">
+              <button
+                className="styler-modal-button secondary"
+                type="button"
+                onClick={handleCancelRemoveItem}
+              >
+                Cancel
+              </button>
+              <button
+                className="styler-modal-button primary"
+                type="button"
+                onClick={handleConfirmRemoveItem}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
@@ -455,6 +538,7 @@ export default function Styler() {
                 className="styler-item"
                 draggable
                 onDragStart={(e) => handleDragStart(e, item)}
+                onClick={() => handleItemClick(item)}
               >
                 <img src={item.image} alt={item.name} className="styler-item-image" />
                 <div className="styler-item-info">
@@ -474,13 +558,37 @@ export default function Styler() {
         <div className="styler-preview">
           <h3 style={{ color: '#363636' }}>Preview</h3>
           <div className="styler-preview-box">
-            <p style={{ opacity: 0.6 }}>Select an item to preview it.</p>
+            {selectedItem ? (
+              <div className="styler-preview-content">
+                <img
+                  src={selectedItem.image}
+                  alt={selectedItem.name}
+                  className="styler-preview-image"
+                />
+                <div className="styler-preview-info">
+                  <div className="styler-preview-name">{selectedItem.name}</div>
+                  <div className="styler-preview-category">{selectedItem.category}</div>
+                </div>
+              </div>
+            ) : (
+              <p style={{ opacity: 0.6 }}>Select an item to preview it.</p>
+            )}
           </div>
           <div className="styler-preview-actions">
-            <button className="styler-action-button" type="button" disabled>
-              Equip
+            <button
+              className="styler-action-button"
+              type="button"
+              onClick={handleEquipSelectedItem}
+              disabled={!selectedItem || !basePhoto || isProcessing}
+            >
+              {isProcessing ? 'Equipping...' : 'Equip'}
             </button>
-            <button className="styler-action-button secondary" type="button" disabled>
+            <button
+              className="styler-action-button secondary"
+              type="button"
+              onClick={handleRemoveSelectedItem}
+              disabled={!selectedItem}
+            >
               Remove
             </button>
           </div>
