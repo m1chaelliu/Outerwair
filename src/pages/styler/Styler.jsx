@@ -194,9 +194,10 @@ export default function Styler() {
     const item = JSON.parse(itemData);
 
     // Calculate the updated list (same logic as handleAddClothingItem, but not async)
-    const updatedList = addedClothingItems.filter(existingItem =>
-      existingItem.category !== item.category || existingItem.category === 'Accessories'
-    );
+    // const updatedList = addedClothingItems.filter(existingItem =>
+    //   existingItem.category !== item.category || existingItem.category === 'Accessories'
+    // );
+    const updatedList = [...addedClothingItems];
     updatedList.push(item);
 
     // Add item to the list of added clothing items (only one per category)
@@ -338,9 +339,10 @@ export default function Styler() {
     if (!selectedItem || !currentPhoto || isProcessing) return;
 
     // Calculate the updated list (same logic as handleAddClothingItem, but not async)
-    const updatedList = addedClothingItems.filter(existingItem =>
-      existingItem.category !== selectedItem.category || existingItem.category === 'Accessories'
-    );
+    // const updatedList = addedClothingItems.filter(existingItem =>
+    //   existingItem.category !== selectedItem.category || existingItem.category === 'Accessories'
+    // );
+    const updatedList = [...addedClothingItems];
     updatedList.push(selectedItem);
 
     // Add item to the list of added clothing items (only one per category)
@@ -427,11 +429,12 @@ export default function Styler() {
   const handleAddClothingItem = (item) => {
     setAddedClothingItems(prev => {
       // Remove any existing item of the same category, except for Accessories
-      const filteredItems = prev.filter(existingItem =>
-        existingItem.category !== item.category || existingItem.category === 'Accessories'
-      );
+      // const filteredItems = prev.filter(existingItem =>
+      //   existingItem.category !== item.category || existingItem.category === 'Accessories'
+      // );
       // Add the new item
-      return [...filteredItems, item];
+      // return [...filteredItems, item];
+      return [...prev, item];
     });
   };
 
