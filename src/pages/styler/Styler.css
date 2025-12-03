@@ -619,17 +619,17 @@
 }
 
 /* Category-specific colors for added bubbles */
-.added-bubble-tops { box-shadow: 0 8px 20px rgba(0,162,255,0.18);}
-.added-bubble-bottoms { box-shadow: 0 8px 20px rgba(76,175,80,0.18);}
-.added-bubble-outerwear { box-shadow: 0 8px 20px rgba(155,89,182,0.18);}
-.added-bubble-accessories { box-shadow: 0 8px 20px rgba(241,196,15,0.18);}
-.added-bubble-shoes { box-shadow: 0 8px 20px rgba(231,76,60,0.18);}
+.added-bubble-tops { box-shadow: 0 8px 20px rgba(0,162,255,0.25);}
+.added-bubble-bottoms { box-shadow: 0 8px 20px rgba(76,175,80,0.25);}
+.added-bubble-outerwear { box-shadow: 0 8px 20px rgba(155,89,182,0.25);}
+.added-bubble-accessories { box-shadow: 0 8px 20px rgba(241,196,15,0.25);}
+.added-bubble-shoes { box-shadow: 0 8px 20px rgba(231,76,60,0.25);}
 
 .added-bubble-tops:hover,
 .added-bubble-bottoms:hover,
 .added-bubble-outerwear:hover,
 .added-bubble-accessories:hover,
 .added-bubble-shoes:hover {
-  box-shadow: 0 12px 30px rgba(231, 76, 60, 0.4);
+  box-shadow: 0 12px 30px rgba(255, 68, 47, 0.4);
   border-color: rgba(231, 76, 60, 0.6);
 }
