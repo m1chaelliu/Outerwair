@@ -647,7 +647,7 @@ export default function Styler() {
             onClick={handleClearAllItems}
             title="Clear all items"
           >
-            🗑️
+            🗑️ Clear all items
           </button>
         </header>
 
