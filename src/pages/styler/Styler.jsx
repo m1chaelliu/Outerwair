@@ -7,6 +7,8 @@ import { combineImagesWithGemini, dataUrlToBase64, base64ToDataUrl, analyzeCloth
 export default function Styler() {
   const navigate = useNavigate();
   const [basePhoto, setBasePhoto] = useState(null);
+  const [addedClothingItems, setAddedClothingItems] = useState([]);
+
   const [clothingItems, setClothingItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -30,11 +32,6 @@ export default function Styler() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // Bubbles state: persisted positions and dragging refs
-  const [bubblePositions, setBubblePositions] = useState({}); // { [itemId]: { left: '10%', top: '120%' } }
-  const draggingRef = useRef(null);
-  const [draggingId, setDraggingId] = useState(null);
-
   useEffect(() => {
     const savedPhoto = localStorage.getItem('modelPhoto');
     if (savedPhoto) {
@@ -45,13 +42,6 @@ export default function Styler() {
     const savedItems = localStorage.getItem('clothingItems');
     if (savedItems) {
       setClothingItems(JSON.parse(savedItems));
-    }
-
-    try {
-      const raw = localStorage.getItem('bubblePositions');
-      if (raw) setBubblePositions(JSON.parse(raw));
-    } catch (e) {
-      // ignore malformed saved positions
     }
 
     // Load isFirstTime from localStorage
@@ -184,6 +174,9 @@ export default function Styler() {
     if (!itemData) return;
 
     const item = JSON.parse(itemData);
+
+    // Add item to the list of added clothing items (only one per category)
+    handleAddClothingItem(item);
 
     // Call the API to combine images
     setIsProcessing(true);
@@ -321,6 +314,9 @@ export default function Styler() {
   const handleEquipSelectedItem = async () => {
     if (!selectedItem || !basePhoto || isProcessing) return;
 
+    // Add item to the list of added clothing items (only one per category)
+    handleAddClothingItem(selectedItem);
+
     setIsProcessing(true);
     try {
       const result = await combineImages(basePhoto, selectedItem.image);
@@ -365,76 +361,21 @@ export default function Styler() {
     setShowDeleteModal(false);
   };
 
-  // pointer drag handlers
-  const handlePointerDownBubble = (e, itemId) => {
-    e.preventDefault();
-    draggingRef.current = { id: itemId };
-    setDraggingId(itemId);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
+  const handleRemoveAddedItem = (indexToRemove) => {
+    setAddedClothingItems(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
-  const onPointerMove = (e) => {
-    const drag = draggingRef.current;
-    if (!drag || !modelAreaRef.current) return;
-    const rect = modelAreaRef.current.getBoundingClientRect();
-    const leftPct = ((e.clientX - rect.left) / rect.width) * 100;
-    const topPct = ((e.clientY - rect.top) / rect.height) * 100;
-
-    const updated = { ...bubblePositions };
-    updated[drag.id] = { left: `${leftPct}%`, top: `${topPct}%` };
-    setBubblePositions(updated);
+  const handleAddClothingItem = (item) => {
+    setAddedClothingItems(prev => {
+      // Remove any existing item of the same category, except for Accessories
+      const filteredItems = prev.filter(existingItem =>
+        existingItem.category !== item.category || existingItem.category === 'Accessories'
+      );
+      // Add the new item
+      return [...filteredItems, item];
+    });
   };
 
-  const onPointerUp = (e) => {
-    const drag = draggingRef.current;
-    if (!drag) return;
-
-    const rect = modelAreaRef.current?.getBoundingClientRect();
-    const updated = { ...bubblePositions };
-
-    if (rect) {
-      const leftPct = ((e.clientX - rect.left) / rect.width) * 100;
-      const topPct = ((e.clientY - rect.top) / rect.height) * 100;
-      updated[drag.id] = { left: `${leftPct}%`, top: `${topPct}%` };
-    }
-
-    saveBubblePositions(updated);
-
-    draggingRef.current = null;
-    setDraggingId(null);
-    window.removeEventListener('pointermove', onPointerMove);
-    window.removeEventListener('pointerup', onPointerUp);
-  };
-
-  // persist positions
-  const saveBubblePositions = (newPositions) => {
-    setBubblePositions(newPositions);
-    try { localStorage.setItem('bubblePositions', JSON.stringify(newPositions)); } catch (_) {}
-  };
-
-  // Default bubble positions by category (percent relative to model wrapper)
-  const getBubblePosition = (category, index, total) => {
-    let baseLeft = 50;
-    let baseTop = 50;
-    switch (category) {
-      case 'Tops': baseTop = -12; baseLeft = 50; break;
-      case 'Outerwear': baseTop = 8; baseLeft = 112; break;
-      case 'Accessories': baseTop = 8; baseLeft = -12; break;
-      case 'Bottoms': baseTop = 112; baseLeft = 50; break;
-      case 'Shoes': baseTop = 125; baseLeft = 78; break;
-      default: baseTop = 50; baseLeft = 50;
-    }
-    const spreadPx = 18;
-    const offset = (index - (total - 1) / 2) * spreadPx;
-    return { left: `calc(${baseLeft}% + ${offset}px)`, top: `${baseTop}%` };
-  };
-
-  // Group clothing items by category for bubble layout
-  const grouped = clothingItems.reduce((acc, it) => {
-    (acc[it.category] = acc[it.category] || []).push(it);
-    return acc;
-  }, {});
 
   return (
     <div className="styler-container">
@@ -733,7 +674,7 @@ export default function Styler() {
 
 
       <div className="styler-model-area">
-        <h2 style={{ margin: '0 0 1rem 0', textAlign: 'center' }}>Your Model</h2>
+        <h2 style={{ margin: '0 0 1rem 0', textAlign: 'center' }}>Your Avatar</h2>
 
         {basePhoto ? (
           <div
@@ -774,48 +715,41 @@ export default function Styler() {
               >
               </div>
             )}
-
-            {/* Bubbles overlay: show uploaded clothing icons around the model */}
-            {clothingItems && clothingItems.length > 0 && (
-              <div className="bubbles-overlay" aria-hidden={false}>
-                {['Tops','Outerwear','Accessories','Bottoms','Shoes'].map((cat) => {
-                  const list = grouped[cat] || [];
-                  return list.map((item, idx) => {
-                    const saved = bubblePositions[item.id];
-                    const pos = saved || getBubblePosition(cat, idx, list.length);
-                    return (
-                      <div
-                        key={item.id}
-                        className={`bubble bubble-${cat.toLowerCase()} ${draggingId === item.id ? 'dragging' : ''}`}
-                        style={{ left: pos.left, top: pos.top }}
-                        title={`${item.name} (${item.category})`}
-                        onPointerDown={(e) => handlePointerDownBubble(e, item.id)}
-                      >
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="bubble-img styler-bubble-image"
-                          onClick={() => setSelectedItem(item)}
-                        />
-                      </div>
-                    );
-                  });
-                })}
-              </div>
-            )}
           </div>
         ) : null}
 
         {basePhoto && (
-          <button
-            className="styler-icon-button"
-            type="button"
-            onClick={handleGoBackToUpload}
-            title="Go back to upload model"
-            style={{ marginTop: '1rem' }}
-          >
-            ← Change Model
-          </button>
+          <>
+            <button
+              className="styler-icon-button"
+              type="button"
+              onClick={handleGoBackToUpload}
+              title="Go back to upload model"
+              style={{ marginTop: '1rem' }}
+            >
+              ← Change Avatar
+            </button>
+
+            {/* Added clothing items bubbles */}
+            {addedClothingItems.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem', justifyContent: 'center' }}>
+                {addedClothingItems.map((item, index) => (
+                  <div
+                    key={`${item.id}-${index}`}
+                    className={`added-bubble added-bubble-${item.category.toLowerCase()}`}
+                    title={`Click to remove ${item.name}`}
+                    onClick={() => handleRemoveAddedItem(index)}
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="bubble-img styler-bubble-image"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         {!basePhoto && (

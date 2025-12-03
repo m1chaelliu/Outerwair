@@ -156,8 +156,8 @@ export default function Upload() {
 
   return (
     <div className="upload-container">
-      <h1>Select Model</h1>
-      <p>Upload / Take a photo of your model</p>
+      <h1>Select Avatar</h1>
+      <p>Upload / Take a photo of your avatar</p>
 
       {/* ---- Preview screen ---- */}
       {isPreviewing && capturedPhoto && (
