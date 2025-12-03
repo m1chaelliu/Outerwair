@@ -25,9 +25,9 @@ export async function combineImagesWithGemini(modelBase64, clothingBase64Array) 
       {
         text: `The first image shows a person (the model). The following images show clothing items, each from these categories below:
         Categories:
-        - Tops (shirts, t-shirts, blouses, sweaters, hoodies, tanks)
+        - Tops (shirts, t-shirts, blouses, sweaters, tanks)
         - Bottoms (pants, jeans, skirts, shorts, leggings)
-        - Outerwear (jackets, coats, blazers, cardigans)
+        - Outerwear (jackets, hoodies, coats, blazers, cardigans)
         - Shoes (sneakers, boots, sandals, heels, flats)
         - Accessories (hats, scarves, bags, belts, jewelry, sunglasses)
 
@@ -102,9 +102,9 @@ export async function analyzeClothingImage(clothingBase64) {
         text: `Analyze this clothing item image and provide both a descriptive title and category.
 
         Categories (choose ONE):
-        - Tops (shirts, t-shirts, blouses, sweaters, hoodies, tanks)
+        - Tops (shirts, t-shirts, blouses, sweaters, tanks)
         - Bottoms (pants, jeans, skirts, shorts, leggings)
-        - Outerwear (jackets, coats, blazers, cardigans)
+        - Outerwear (jackets, hoodies, coats, blazers, cardigans)
         - Shoes (sneakers, boots, sandals, heels, flats)
         - Accessories (hats, scarves, bags, belts, jewelry, sunglasses)
 
