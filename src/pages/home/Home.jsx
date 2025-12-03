@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <div className="home-container">
       <h1>Welcome to Outerw<span className="gradient-ai">ai</span>r</h1>
-      <p>Team <span className="gradient-ai">(E)</span>ggcelent - Connor Chow, Michael Liu, Elliott Chia, Han Yang</p>
+      <p>Team [E]ggcelent - Connor Chow, Michael Liu, Elliott Chia, Han Yang</p>
 
       <button
         className="nav-button"
