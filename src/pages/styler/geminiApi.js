@@ -41,6 +41,8 @@ export async function combineImagesWithGemini(modelBase64, clothingBase64Array) 
         Ensure natural fit, correct lighting, realistic proportions, and seamless integration.
         The result should look as if the person is actually wearing all the clothing items together in a complete outfit.
         
+        Make sure the face and body of the first image is used.
+        Keep the background of the first image as well.
         Make it look as close to the first image of the person as possible.
         `
       },
