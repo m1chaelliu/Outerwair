@@ -150,8 +150,8 @@ export default function Upload() {
   const handleUsePhoto = () => {
     if (!capturedPhoto) return;
 
-    localStorage.setItem('modelPhoto', capturedPhoto);
-    navigate('/styler');
+    // Pass the photo via navigation state instead of localStorage
+    navigate('/styler', { state: { modelPhoto: capturedPhoto } });
   };
 
   return (

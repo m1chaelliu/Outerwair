@@ -1,12 +1,14 @@
 // src/Styler.jsx
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './Styler.css';
 import { combineImagesWithGemini, dataUrlToBase64, base64ToDataUrl, analyzeClothingImage } from './geminiApi';
 
 export default function Styler() {
   const navigate = useNavigate();
-  const [basePhoto, setBasePhoto] = useState(null);
+  const location = useLocation();
+  const [currentPhoto, setCurrentPhoto] = useState(null);
+  const [originalModelPhoto, setOriginalModelPhoto] = useState(null);
   const [addedClothingItems, setAddedClothingItems] = useState([]);
 
   const [clothingItems, setClothingItems] = useState([]);
@@ -33,9 +35,11 @@ export default function Styler() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    const savedPhoto = localStorage.getItem('modelPhoto');
-    if (savedPhoto) {
-      setBasePhoto(savedPhoto);
+    // Get model photo from navigation state
+    const photoFromState = location.state?.modelPhoto;
+    if (photoFromState) {
+      setCurrentPhoto(photoFromState);
+      setOriginalModelPhoto(photoFromState);
     }
 
     // Load saved clothing items from localStorage
@@ -43,13 +47,7 @@ export default function Styler() {
     if (savedItems) {
       setClothingItems(JSON.parse(savedItems));
     }
-
-    // Load isFirstTime from localStorage
-    // const savedFirstTime = localStorage.getItem('isFirstTime');
-    // if (savedFirstTime === 'false') {
-    //   setIsFirstTime(false);
-    // }
-  }, []);
+  }, [location.state]);
 
   const handleGoBackToUpload = () => {
     navigate('/upload');
@@ -90,7 +88,9 @@ export default function Styler() {
   };
 
   const handleSaveClothingItem = () => {
-    if (!itemName.trim() || !pendingUpload) return;
+    if (!itemName.trim() || !pendingUpload) {
+      return;
+    }
 
     const newItem = {
       id: Date.now(),
@@ -101,7 +101,21 @@ export default function Styler() {
 
     const updatedItems = [...clothingItems, newItem];
     setClothingItems(updatedItems);
-    localStorage.setItem('clothingItems', JSON.stringify(updatedItems));
+
+    try {
+      localStorage.setItem('clothingItems', JSON.stringify(updatedItems));
+    } catch (error) {
+      console.error('Failed to save to localStorage:', error);
+
+      if (error.name === 'QuotaExceededError') {
+        alert(
+          'Storage limit exceeded! Your wardrobe has too many items.\n\n' +
+          'Please delete some items to free up space, or use the "Clear All" button to start fresh.'
+        );
+      } else {
+        alert('Failed to save item. Please try again.');
+      }
+    }
 
     setShowUploadModal(false);
     setPendingUpload(null);
@@ -147,14 +161,18 @@ export default function Styler() {
   };
 
   // Use Gemini API to combine images
-  const combineImages = async (modelImage, clothingImage) => {
+  const combineImages = async (modelImage, clothingImages) => {
     try {
       // Convert data URLs to base64 (remove data:image/png;base64, prefix)
       const modelBase64 = dataUrlToBase64(modelImage);
-      const clothingBase64 = dataUrlToBase64(clothingImage);
+
+      // Convert clothing images array to base64 array
+      const clothingBase64Array = Array.isArray(clothingImages)
+        ? clothingImages.map(img => dataUrlToBase64(img))
+        : [dataUrlToBase64(clothingImages)];
 
       // Generate the combined image using Gemini
-      const resultBase64 = await combineImagesWithGemini(modelBase64, clothingBase64);
+      const resultBase64 = await combineImagesWithGemini(modelBase64, clothingBase64Array);
 
       // Convert back to data URL for display
       const combinedImage = base64ToDataUrl(resultBase64);
@@ -175,22 +193,27 @@ export default function Styler() {
 
     const item = JSON.parse(itemData);
 
+    // Calculate the updated list (same logic as handleAddClothingItem, but not async)
+    const updatedList = addedClothingItems.filter(existingItem =>
+      existingItem.category !== item.category || existingItem.category === 'Accessories'
+    );
+    updatedList.push(item);
+
     // Add item to the list of added clothing items (only one per category)
     handleAddClothingItem(item);
 
-    // Call the API to combine images
+    // Call the API to combine images with all items
     setIsProcessing(true);
     try {
-      const result = await combineImages(basePhoto, item.image);
+      // Always combine from the original model photo
+      const clothingImages = updatedList.map(i => i.image);
+      const result = await combineImages(originalModelPhoto, clothingImages);
 
       if (result.success) {
-        setBasePhoto(result.combinedImage);
-        // persist combined model so it remains after reloads
-        try { localStorage.setItem('modelPhoto', result.combinedImage); } catch (_) {}
+        setCurrentPhoto(result.combinedImage);
 
         // Mark that user has combined images at least once
         setIsFirstTime(false);
-        // try { localStorage.setItem('isFirstTime', 'false'); } catch (_) {}
 
         console.log('Successfully combined images');
       } else {
@@ -312,21 +335,27 @@ export default function Styler() {
   };
 
   const handleEquipSelectedItem = async () => {
-    if (!selectedItem || !basePhoto || isProcessing) return;
+    if (!selectedItem || !currentPhoto || isProcessing) return;
+
+    // Calculate the updated list (same logic as handleAddClothingItem, but not async)
+    const updatedList = addedClothingItems.filter(existingItem =>
+      existingItem.category !== selectedItem.category || existingItem.category === 'Accessories'
+    );
+    updatedList.push(selectedItem);
 
     // Add item to the list of added clothing items (only one per category)
     handleAddClothingItem(selectedItem);
 
     setIsProcessing(true);
     try {
-      const result = await combineImages(basePhoto, selectedItem.image);
+      // Always combine from the original model photo
+      const clothingImages = updatedList.map(i => i.image);
+      const result = await combineImages(originalModelPhoto, clothingImages);
 
       if (result.success) {
-        setBasePhoto(result.combinedImage);
-        localStorage.setItem('modelPhoto', result.combinedImage);
+        setCurrentPhoto(result.combinedImage);
 
         setIsFirstTime(false);
-        // try { localStorage.setItem('isFirstTime', 'false'); } catch (_) {}
 
         console.log('Successfully combined images:', result.message);
       }
@@ -361,8 +390,38 @@ export default function Styler() {
     setShowDeleteModal(false);
   };
 
-  const handleRemoveAddedItem = (indexToRemove) => {
-    setAddedClothingItems(prev => prev.filter((_, index) => index !== indexToRemove));
+  const handleRemoveAddedItem = async (indexToRemove) => {
+    // Remove the item from the list
+    const updatedList = addedClothingItems.filter((_, index) => index !== indexToRemove);
+    setAddedClothingItems(updatedList);
+
+    // If there are still items left, regenerate the image with remaining items
+    if (updatedList.length > 0) {
+      setIsProcessing(true);
+      try {
+        if (!originalModelPhoto) return;
+
+        const clothingImages = updatedList.map(i => i.image);
+        const result = await combineImages(originalModelPhoto, clothingImages);
+
+        if (result.success) {
+          setCurrentPhoto(result.combinedImage);
+        } else {
+          console.error('Combine failed:', result.error);
+          alert('Failed to regenerate image: ' + (result.error || 'unknown'));
+        }
+      } catch (error) {
+        console.error('Error regenerating image:', error);
+        alert('Failed to regenerate image. Please try again.');
+      } finally {
+        setIsProcessing(false);
+      }
+    } else {
+      // No items left, revert to original model photo
+      if (originalModelPhoto) {
+        setCurrentPhoto(originalModelPhoto);
+      }
+    }
   };
 
   const handleAddClothingItem = (item) => {
@@ -656,7 +715,7 @@ export default function Styler() {
               className="styler-action-button"
               type="button"
               onClick={handleEquipSelectedItem}
-              disabled={!selectedItem || !basePhoto || isProcessing}
+              disabled={!selectedItem || !currentPhoto || isProcessing}
             >
               {isProcessing ? 'Equipping...' : 'Equip'}
             </button>
@@ -676,7 +735,7 @@ export default function Styler() {
       <div className="styler-model-area">
         <h2 style={{ margin: '0 0 1rem 0', textAlign: 'center' }}>Your Avatar</h2>
 
-        {basePhoto ? (
+        {currentPhoto ? (
           <div
             ref={modelAreaRef}
             className={`styler-model-wrapper ${isDraggingOver ? 'dragging-over' : ''}`}
@@ -685,7 +744,7 @@ export default function Styler() {
             onDrop={handleDrop}
           >
             <img
-              src={basePhoto}
+              src={currentPhoto}
               alt="Base model"
               className="styler-model-photo"
             />
@@ -718,7 +777,7 @@ export default function Styler() {
           </div>
         ) : null}
 
-        {basePhoto && (
+        {currentPhoto && (
           <>
             <button
               className="styler-icon-button"
@@ -752,7 +811,7 @@ export default function Styler() {
           </>
         )}
 
-        {!basePhoto && (
+        {!currentPhoto && (
           <div className="styler-no-photo">
             <p>No model photo found.</p>
             <p style={{ opacity: 0.7, marginTop: '0.25rem' }}>
