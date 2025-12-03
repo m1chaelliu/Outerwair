@@ -150,14 +150,14 @@ export default function Upload() {
   const handleUsePhoto = () => {
     if (!capturedPhoto) return;
 
-    localStorage.setItem('modelPhoto', capturedPhoto);
-    navigate('/styler');
+    // Pass the photo via navigation state instead of localStorage
+    navigate('/styler', { state: { modelPhoto: capturedPhoto } });
   };
 
   return (
     <div className="upload-container">
-      <h1>Select Model</h1>
-      <p>Upload / Take a photo of your model</p>
+      <h1>Select Avatar</h1>
+      <p>Upload / Take a photo of your avatar</p>
 
       {/* ---- Preview screen ---- */}
       {isPreviewing && capturedPhoto && (
