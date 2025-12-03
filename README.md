@@ -1,6 +1,6 @@
 # _Outerwair_ - CS 160 Project
 
-Team [E]ggcelent
+Team [E]ggcelent - 
 Connor Chow, Michael Liu, Elliott Chia, Han Yang
 
 ---
