@@ -687,7 +687,7 @@ export default function Styler() {
               </div>
             ))
           ) : (
-            <p style={{ opacity: 0.6 }}>
+            <p style={{ color: '#666' }}>
               No items in this category.
             </p>
           )}
@@ -710,7 +710,7 @@ export default function Styler() {
                 </div>
               </div>
             ) : (
-              <p style={{ opacity: 0.6 }}>Select an item to preview it.</p>
+              <p style={{ color: '#666' }}>Select an item to preview it.</p>
             )}
           </div>
           <div className="styler-preview-actions">
@@ -817,7 +817,7 @@ export default function Styler() {
         {!currentPhoto && (
           <div className="styler-no-photo">
             <p>No model photo found.</p>
-            <p style={{ opacity: 0.7, marginTop: '0.25rem' }}>
+            <p style={{ color: '#666', marginTop: '0.25rem' }}>
               Go back to upload or take a photo to get started.
             </p>
             <button

@@ -12,7 +12,7 @@
 }
 
 .gradient-ai {
-  background: linear-gradient(135deg, #ff6b35, #f7931e, #3fff7c, #00a2ff, #7b2cbf, #ff6b35);
+  background: linear-gradient(135deg, #ff6b35, #f7931e, #3fff7c, #0077cc, #7b2cbf, #ff6b35);
   background-size: 400% 400%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -35,15 +35,50 @@
 .nav-button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  background-color: #00a2ff;
+  background-color: #0077cc;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.2s ease;
   margin-top: 2rem;
+  position: relative;
+  /* overflow: hidden; */
 }
 
 .nav-button:hover {
-  background-color: #007dc6;
+  background-color: #005fa3;
+  transform: translateY(-2px);
+}
+
+.nav-button-start {
+  background-color: #0077cc;
+  position: relative;
+  transition: all 0.5s ease-in;
+}
+
+.nav-button-start::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #0077cc, #0077cc, #7b2cbf, #ff6b35, #f7931e, #3fff7c, #0077cc);
+  background-size: 400% 400%;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+  z-index: -1;
+}
+
+.nav-button-start:hover::before {
+  opacity: 1;
+  animation: gradient-cycle 3s ease-in-out infinite;
+}
+
+.nav-button-start:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(44, 81, 191, 0.5);
+  transition: all 0.15s ease-in;
 }

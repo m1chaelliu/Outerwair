@@ -46,21 +46,21 @@
 
 .styler-model-overlay-temp {
   color: white;
-  border: 3px dashed #00a2ff;
+  border: 3px dashed #0077cc;
   border-radius: 12px;
-  background: rgba(0, 162, 255, 0.05);
+  background: rgba(0, 119, 204, 0.05);
   animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
   0%, 100% {
-    border-color: #00a2ff;
-    background: rgba(0, 162, 255, 0.6);
+    border-color: #0077cc;
+    background: rgba(0, 119, 204, 0.6);
     transform: scale(1.01);
   }
   50% {
-    border-color: #007dc6;
-    background: rgba(0, 162, 255, 0.05);
+    border-color: #005fa3;
+    background: rgba(0, 119, 204, 0.05);
     transform: scale(1.0);
   }
 }
@@ -72,7 +72,7 @@
   gap: 0.75rem;
   padding: 0.75rem;
   border-radius: 8px;
-  background: #00a2ff;
+  background: #0077cc;
   border: 2px solid transparent;
   cursor: grab;
   transition: all 0.2s ease;
@@ -80,7 +80,7 @@
 }
 
 .styler-item:hover {
-  background: #007dc6;
+  background: #005fa3;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -116,11 +116,12 @@
   font-weight: 600;
   font-size: 0.95rem;
   margin-bottom: 0.25rem;
+  color: white;
 }
 
 .styler-item-category {
   font-size: 0.85rem;
-  color: #666;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 /* Drag and Drop States */
@@ -132,7 +133,7 @@
 
 .styler-drop-indicator {
   background: rgba(76, 175, 80, 0.9);
-  color: 00a2ff;
+  color: white;
   padding: 1rem 2rem;
   border-radius: 12px;
   font-weight: 600;
@@ -319,14 +320,14 @@
 }
 
 .styler-modal-button.primary {
-  background: #00a2ff;
+  background: #0077cc;
   color: white;
 }
 
 .styler-modal-button.primary:hover:not(:disabled) {
-  background: #007dc6;
+  background: #005fa3;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 162, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 119, 204, 0.3);
 }
 
 .styler-modal-button.primary:disabled {
@@ -409,7 +410,7 @@
 
 .styler-preview-box p {
   margin: 0;
-  opacity: 0.6;
+  color: #666;
   font-size: 0.9rem;
   text-align: center;
 }
@@ -446,7 +447,7 @@
 /* Icon Buttons */
 .styler-icon-button {
   padding: 0.5rem 1rem;
-  background: #00a2ff;
+  background: #0077cc;
   color: white;
   border: none;
   border-radius: 6px;
@@ -456,7 +457,7 @@
 }
 
 .styler-icon-button:hover {
-  background: #007dc6;
+  background: #005fa3;
   transform: translateY(-2px);
 }
 
@@ -477,18 +478,18 @@
 }
 
 .styler-category.active {
-  background: #00a2ff;
+  background: #0077cc;
   color: white;
 }
 
 .styler-category.active:hover {
-  background: #007dc6;
+  background: #005fa3;
 }
 
 /* Action Buttons */
 .styler-action-button {
   padding: 0.75rem 1.5rem;
-  background: #00a2ff;
+  background: #0077cc;
   color: white;
   border: none;
   border-radius: 8px;
@@ -499,7 +500,7 @@
 }
 
 .styler-action-button:hover:not(:disabled) {
-  background: #007dc6;
+  background: #005fa3;
   transform: translateY(-2px);
 }
 
@@ -523,7 +524,7 @@
 .nav-button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  background-color: #00a2ff;
+  background-color: #0077cc;
   color: white;
   border: none;
   border-radius: 4px;
@@ -532,7 +533,7 @@
 }
 
 .nav-button:hover {
-  background-color: #007dc6;
+  background-color: #005fa3;
 }
 
 /* Bubbles overlay */
@@ -585,7 +586,7 @@
 .bubble { z-index: 40; }
 
 /* Category-specific color accents (optional) */
-.bubble-tops { box-shadow: 0 8px 20px rgba(0,162,255,0.18);}
+.bubble-tops { box-shadow: 0 8px 20px rgba(0,119,204,0.18);}
 .bubble-bottoms { box-shadow: 0 8px 20px rgba(76,175,80,0.18);}
 .bubble-outerwear { box-shadow: 0 8px 20px rgba(155,89,182,0.18);}
 .bubble-accessories { box-shadow: 0 8px 20px rgba(241,196,15,0.18);}
@@ -619,7 +620,7 @@
 }
 
 /* Category-specific colors for added bubbles */
-.added-bubble-tops { box-shadow: 0 8px 20px rgba(0,162,255,0.25);}
+.added-bubble-tops { box-shadow: 0 8px 20px rgba(0,119,204,0.25);}
 .added-bubble-bottoms { box-shadow: 0 8px 20px rgba(76,175,80,0.25);}
 .added-bubble-outerwear { box-shadow: 0 8px 20px rgba(155,89,182,0.25);}
 .added-bubble-accessories { box-shadow: 0 8px 20px rgba(241,196,15,0.25);}

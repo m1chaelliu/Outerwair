@@ -10,7 +10,7 @@ export default function Home() {
       <p>Team [E]ggcelent - Connor Chow, Michael Liu, Elliott Chia, Han Yang</p>
 
       <button
-        className="nav-button"
+        className="nav-button nav-button-start"
         onClick={() => navigate('/upload')}
       >
         Begin →
