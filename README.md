@@ -1,8 +1,15 @@
 # _Outerwair_ - CS 160 Project
-<img src="public/outerwair-icon.png" width="75" height="75">
-
-Team [E]ggcelent - 
-Connor Chow, Michael Liu, Elliott Chia, Han Yang
+<table>
+  <tr>
+    <td>
+      <img src="public/outerwair-icon.png" width="75" height="75">
+    </td>
+    <td>
+      <strong>Team [E]ggcelent</strong><br>
+      Connor Chow, Michael Liu, Elliott Chia, Han Yang
+    </td>
+  </tr>
+</table>
 
 ---
 ## TO RUN:
@@ -18,6 +25,8 @@ npm install
 ```
 npm run dev
 ```
+---
+![Demo](public/demo.gif)
 ---
 ## Description
 
