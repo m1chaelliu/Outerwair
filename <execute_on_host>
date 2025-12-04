@@ -1,4 +1,0 @@
-It seems like a `git merge` operation was interrupted. Would you like to:
-
-1. Commit the merge (assuming you've resolved any conflicts and are happy with the changes).
-2. Abort the merge (if you want to discard the merged changes and return to the state before the merge attempt).
