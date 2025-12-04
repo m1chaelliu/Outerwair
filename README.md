@@ -26,8 +26,11 @@ npm install
 npm run dev
 ```
 ---
-![Demo](public/demo.gif)
+
+<img src="public/demo.gif" alt="Demo" width="400" style="margin-right: 50px; margin-bottom: 8px;" />
+
 ---
+
 ## Description
 
 ### Problem
@@ -38,6 +41,7 @@ Individuals who need to visualize how clothing items will look on them, such as 
 
 ### Solution
 We created a web interface that enables users to be able to take a model, either uploaded or camera, and drag any photo of clothing/accessories which can be merged onto the model. Our solution uses the camera function to enable the user to easily try clothing on themselves, without requiring all the extra steps of uploading a photo of yourself to the website. We’ve added drag-and-drop functionality with auto-sorting to create a more seamless user experience. 
+
 
 ---
 
